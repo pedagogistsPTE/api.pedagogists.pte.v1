@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Module {
+  id          Int        @id @default(autoincrement())
+  name        String
+  code        String     @unique
+  description String?
+  questions   Question[]
+}
+
+model QuestionType {
+  id          Int        @id @default(autoincrement())
+  name        String
+  code        String     @unique
+  description String?
+  questions   Question[]
+}
+
+model Question {
+  id             Int           @id @default(autoincrement())
+  externalId     Int?          @unique
+  title          String
+  passage        String?
+  promptText     String?
+  audioPrompt    String?
+  imagePrompt    String?
+  preparationTime Int?
+  answerTime     Int?
+  difficulty     Int           @default(1)
+  sampleAnswer   String?
+  totalPracticed Int           @default(0)
+  practiceCount  Int           @default(0)
+  category       String        @default("speaking")
+  module         Module?       @relation(fields: [moduleId], references: [id])
+  moduleId       Int?
+  type           QuestionType? @relation(fields: [typeId], references: [id])
+  typeId         Int?
+  media          Media[]
+  createdAt      DateTime      @default(now())
+  modifiedAt     DateTime      @updatedAt
+}
+
+model Media {
+  id         Int          @id @default(autoincrement())
+  question   Question?    @relation(fields: [questionId], references: [id])
+  questionId Int?
+  mediaType  String
+  transcript String?
+  createdAt  DateTime     @default(now())
+  tracks     MediaTrack[]
+}
+
+model MediaTrack {
+  id       Int     @id @default(autoincrement())
+  media    Media   @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  mediaId  Int
+  url      String
+  locale   String?
+  speaker  String?
+}
